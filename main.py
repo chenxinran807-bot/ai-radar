@@ -9,8 +9,11 @@ import push_lark
 
 
 def run(db_path="data/radar.db", sources_path="sources.yaml"):
-    new_ids = fetch.collect(db_path, sources_path)
+    fetch.collect(db_path, sources_path)
     conn = fetch.init_db(db_path)
+    # 处理所有待解读文章（含上次 failed 的重试），不只本轮新抓到的
+    new_ids = [r[0] for r in conn.execute(
+        "SELECT id FROM articles WHERE status IN ('new', 'failed')")]
     done = []
     for row_id in new_ids:
         row = conn.execute(
