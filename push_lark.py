@@ -49,3 +49,16 @@ def build_digest_card(source_name, items):
             "elements": [{"tag": "markdown", "content": "\n".join(lines)}],
         },
     }
+
+
+def push(card, webhook=None, retries=3):
+    webhook = webhook or os.environ["LARK_WEBHOOK_URL"]
+    for attempt in range(retries):
+        try:
+            resp = requests.post(webhook, json=card, timeout=15)
+            if resp.ok and resp.json().get("code", 0) == 0:
+                return True
+        except Exception as e:
+            print(f"[push] attempt {attempt + 1} failed: {e}")
+        time.sleep(2 ** attempt)
+    return False
