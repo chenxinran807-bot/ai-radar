@@ -77,4 +77,47 @@ def fetch_entries(source, timeout=20):
             "summary": e.get("summary", ""),
             "published": e.get("published", ""),
         } for e in feed.entries]
-    raise ValueError(f"unknown source type: {source['type']}")
+    if source["type"] != "scrape":
+        raise ValueError(f"unknown source type: {source['type']}")
+    resp = requests.get(source["url"], timeout=timeout, headers=USER_AGENT)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, "html.parser")
+    entries = []
+    for a in soup.select(source["selector"]):
+        href = a.get("href", "")
+        if href.startswith("/"):
+            href = source["base"] + href
+        entries.append({"source": source["name"], "url": href,
+                        "title": a.get_text(strip=True),
+                        "summary": "", "published": ""})
+    return entries
+
+
+def fetch_article_text(url, timeout=20, max_chars=8000):
+    resp = requests.get(url, timeout=timeout, headers=USER_AGENT)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, "html.parser")
+    root = soup.find("article") or soup.body or soup
+    return root.get_text("\n", strip=True)[:max_chars]
+
+
+def collect(db_path="data/radar.db", sources_path="sources.yaml"):
+    """抓全部源，存关键词命中的新条目，返回新 row id 列表。单源失败只记日志。"""
+    conn = init_db(db_path)
+    new_ids = []
+    for source in load_sources(sources_path):
+        try:
+            entries = fetch_entries(source)
+        except Exception as e:
+            print(f"[fetch] {source['name']} failed: {e}")
+            continue
+        for entry in entries:
+            if not passes_keywords(source, entry["title"], entry["summary"]):
+                continue
+            row_id = save_new(conn, entry)
+            if row_id:
+                new_ids.append(row_id)
+        conn.commit()
+        time.sleep(1)
+    conn.close()
+    return new_ids

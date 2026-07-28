@@ -39,3 +39,51 @@ def test_fetch_entries_rss():
     assert entries[0]["title"] == "Introducing GPT-X"
     assert entries[0]["url"] == "https://example.com/gpt-x"
     assert entries[0]["source"] == "OpenAI"
+
+
+from unittest.mock import patch
+
+
+class FakeResp:
+    def __init__(self, text):
+        self.text = text
+        self.ok = True
+
+    def raise_for_status(self):
+        pass
+
+
+def load_fixture(name):
+    with open(f"tests/fixtures/{name}", encoding="utf-8") as f:
+        return f.read()
+
+
+def test_fetch_entries_scrape():
+    source = {"name": "Anthropic", "type": "scrape",
+              "url": "https://www.anthropic.com/news",
+              "selector": "a[href^='/news/']",
+              "base": "https://www.anthropic.com"}
+    with patch("fetch.requests.get", return_value=FakeResp(load_fixture("page.html"))):
+        entries = fetch.fetch_entries(source)
+    assert entries[0]["url"] == "https://www.anthropic.com/news/claude-y"
+    assert entries[0]["title"] == "Claude Y Released"
+
+
+def test_fetch_article_text():
+    with patch("fetch.requests.get", return_value=FakeResp(load_fixture("page.html"))):
+        text = fetch.fetch_article_text("https://x.com/a")
+    assert "Full article body here." in text
+
+
+def test_collect(tmp_path):
+    p = tmp_path / "sources.yaml"
+    p.write_text(
+        "sources:\n"
+        "  - name: OpenAI\n"
+        "    type: rss\n"
+        "    url: tests/fixtures/rss.xml\n"
+        "    keywords: [gpt]\n",
+        encoding="utf-8")
+    with patch("fetch.time.sleep"):
+        ids = fetch.collect(str(tmp_path / "t.db"), str(p))
+    assert len(ids) == 1
