@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.airadar</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/bytedance/ai-radar/.venv/bin/python</string>
+    <string>/Users/bytedance/ai-radar/main.py</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/bytedance/ai-radar</string>
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>0</integer></dict>
+    <dict><key>Hour</key><integer>20</integer><key>Minute</key><integer>0</integer></dict>
+  </array>
+  <key>StandardOutPath</key><string>/Users/bytedance/ai-radar/data/run.log</string>
+  <key>StandardErrorPath</key><string>/Users/bytedance/ai-radar/data/run.log</string>
+</dict>
+</plist>
