@@ -29,7 +29,9 @@ def test_run_end_to_end(tmp_path):
         conn.commit()
         init_db.return_value = conn
         main.run(db, src)
-        status = conn.execute(
-            "SELECT status FROM articles WHERE id = 1").fetchone()[0]
         conn.close()
+        check = sqlite3.connect(db)
+        status = check.execute(
+            "SELECT status FROM articles WHERE id = 1").fetchone()[0]
+        check.close()
     assert status == "pushed"
