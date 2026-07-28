@@ -1,0 +1,15 @@
+sources:
+  - name: OpenAI
+    type: rss
+    url: https://openai.com/news/rss.xml
+    keywords: [model, gpt, release, introducing]
+  - name: Google DeepMind
+    type: rss
+    url: https://deepmind.google/blog/rss.xml
+    keywords: [model, gemini, release]
+  - name: Anthropic
+    type: scrape
+    url: https://www.anthropic.com/news
+    selector: "a[href^='/news/']"
+    base: https://www.anthropic.com
+    keywords: [claude, model, release]
