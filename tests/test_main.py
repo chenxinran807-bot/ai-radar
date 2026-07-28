@@ -35,3 +35,24 @@ def test_run_end_to_end(tmp_path):
             "SELECT status FROM articles WHERE id = 1").fetchone()[0]
         check.close()
     assert status == "pushed"
+
+
+def test_baseline_marks_skipped(tmp_path):
+    db = str(tmp_path / "t.db")
+    with patch("main.fetch.collect", return_value=[1]), \
+         patch("main.fetch.init_db") as init_db:
+        import sqlite3
+        conn = sqlite3.connect(db)
+        conn.executescript(main.fetch.SCHEMA)
+        conn.execute(
+            "INSERT INTO articles (id, source, url, title, title_hash)"
+            " VALUES (1, 'S', 'https://x.com/a', 'T', 'h')")
+        conn.commit()
+        init_db.return_value = conn
+        main.baseline(db)
+        conn.close()
+        check = sqlite3.connect(db)
+        status = check.execute(
+            "SELECT status FROM articles WHERE id = 1").fetchone()[0]
+        check.close()
+    assert status == "skipped"

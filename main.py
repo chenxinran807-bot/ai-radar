@@ -64,6 +64,17 @@ def run(db_path="data/radar.db", sources_path="sources.yaml"):
     build_site.build(db_path)
 
 
+def baseline(db_path="data/radar.db", sources_path="sources.yaml"):
+    """首次运行/新增源时调用：抓取并把全部未处理文章标为 skipped，防刷屏。"""
+    fetch.collect(db_path, sources_path)
+    conn = fetch.init_db(db_path)
+    cur = conn.execute("UPDATE articles SET status = 'skipped'"
+                       " WHERE status = 'new'")
+    conn.commit()
+    conn.close()
+    print(f"[baseline] {cur.rowcount} 条存量文章已标记 skipped")
+
+
 def weekly(db_path="data/radar.db"):
     conn = fetch.init_db(db_path)
     rows = conn.execute(
@@ -100,5 +111,7 @@ def weekly(db_path="data/radar.db"):
 if __name__ == "__main__":
     if "--weekly" in sys.argv:
         weekly()
+    elif "--baseline" in sys.argv:
+        baseline()
     else:
         run()

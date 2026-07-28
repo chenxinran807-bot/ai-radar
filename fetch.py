@@ -87,6 +87,10 @@ def fetch_entries(source, timeout=20):
         href = a.get("href", "")
         if href.startswith("/"):
             href = source["base"] + href
+        # 过滤分页、标签页和列表页自身等噪声链接
+        if ("?page=" in href or "/tag/" in href
+                or href.rstrip("/") == source["url"].rstrip("/")):
+            continue
         entries.append({"source": source["name"], "url": href,
                         "title": a.get_text(strip=True),
                         "summary": "", "published": ""})

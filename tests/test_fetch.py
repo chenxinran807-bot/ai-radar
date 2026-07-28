@@ -87,3 +87,17 @@ def test_collect(tmp_path):
     with patch("fetch.time.sleep"):
         ids = fetch.collect(str(tmp_path / "t.db"), str(p))
     assert len(ids) == 1
+
+
+def test_scrape_filters_junk_links():
+    html = """<html><body>
+    <a href="/blog/real-post">Real Post</a>
+    <a href="/blog/?page=2">Next</a>
+    <a href="/blog/tag/x">Tag</a>
+    <a href="/blog">Blog Home</a>
+    </body></html>"""
+    source = {"name": "S", "type": "scrape", "url": "https://s.com/blog",
+              "selector": "a[href^='/blog']", "base": "https://s.com"}
+    with patch("fetch.requests.get", return_value=FakeResp(html)):
+        entries = fetch.fetch_entries(source)
+    assert [e["url"] for e in entries] == ["https://s.com/blog/real-post"]

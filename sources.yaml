@@ -1,15 +1,54 @@
+# 实测可用的监控源（2026-07-27 验证）。
+# 不可抓：xAI（Cloudflare 封锁）、Qwen/智谱/字节Seed/阶跃/文心（纯 JS SPA）、
+# Mistral/百度IR（本机网络超时，部署环境可复测）。
 sources:
   - name: OpenAI
     type: rss
     url: https://openai.com/news/rss.xml
-    keywords: [model, gpt, release, introducing]
+    keywords: [gpt, model, release, introducing, o-series]
+
   - name: Google DeepMind
     type: rss
     url: https://deepmind.google/blog/rss.xml
-    keywords: [model, gemini, release]
+    keywords: [gemini, model, release, introducing, alpha]
+
   - name: Anthropic
     type: scrape
     url: https://www.anthropic.com/news
     selector: "a[href^='/news/']"
     base: https://www.anthropic.com
-    keywords: [claude, model, release]
+    keywords: [claude, model, release, introducing, opus, sonnet, haiku]
+
+  - name: Meta AI
+    type: scrape
+    url: https://ai.meta.com/blog/
+    selector: "a[href^='https://ai.meta.com/blog/']"
+    keywords: [llama, model, release, introducing, muse]
+
+  - name: Cohere
+    type: scrape
+    url: https://cohere.com/blog
+    selector: "a[href^='/blog/']"
+    base: https://cohere.com
+    keywords: [command, model, release, introducing, embed, rerank]
+
+  - name: Moonshot AI (Kimi)
+    type: scrape
+    url: https://www.kimi.com/blog/
+    selector: "a[href^='/blog/']"
+    base: https://www.kimi.com
+    keywords: [kimi, k2, k3, model, release, 模型, 发布]
+
+  - name: DeepSeek
+    type: scrape
+    url: https://api-docs.deepseek.com/news
+    selector: "a[href^='/news/news']"
+    base: https://api-docs.deepseek.com
+    keywords: [deepseek, model, release, v3, r1, 模型, 发布]
+
+  - name: MiniMax
+    type: scrape
+    url: https://www.minimax.io/news
+    selector: "a[href^='/news/']"
+    base: https://www.minimax.io
+    keywords: [minimax, model, release, m2, m3, hailuo, 模型, 发布]
