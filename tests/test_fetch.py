@@ -30,3 +30,12 @@ def test_load_sources(tmp_path):
     sources = fetch.load_sources(str(p))
     assert sources[0]["name"] == "OpenAI"
     assert sources[0]["type"] == "rss"
+
+
+def test_fetch_entries_rss():
+    source = {"name": "OpenAI", "type": "rss",
+              "url": "tests/fixtures/rss.xml"}
+    entries = fetch.fetch_entries(source)
+    assert entries[0]["title"] == "Introducing GPT-X"
+    assert entries[0]["url"] == "https://example.com/gpt-x"
+    assert entries[0]["source"] == "OpenAI"

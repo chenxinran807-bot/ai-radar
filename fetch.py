@@ -64,3 +64,17 @@ def save_new(conn, entry):
         (entry["source"], entry["url"], entry["title"],
          title_hash(entry["title"]), entry["summary"], entry["published"]))
     return cur.lastrowid
+
+
+def fetch_entries(source, timeout=20):
+    """返回 [{source, url, title, summary, published}]。"""
+    if source["type"] == "rss":
+        feed = feedparser.parse(source["url"])
+        return [{
+            "source": source["name"],
+            "url": e.get("link", ""),
+            "title": e.get("title", "").strip(),
+            "summary": e.get("summary", ""),
+            "published": e.get("published", ""),
+        } for e in feed.entries]
+    raise ValueError(f"unknown source type: {source['type']}")
