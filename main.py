@@ -53,7 +53,7 @@ def run(db_path="data/radar.db", sources_path="sources.yaml"):
     for source, items in by_source.items():
         card = (push_lark.build_card(*items[0]) if len(items) == 1
                 else push_lark.build_digest_card(source, items))
-        if push_lark.push(card):
+        if push_lark.send(card):
             for article, _ in items:
                 conn.execute(
                     "UPDATE articles SET status = 'pushed',"
@@ -105,7 +105,7 @@ def weekly(db_path="data/radar.db"):
             "elements": [{"tag": "markdown", "content": "\n".join(lines)}],
         },
     }
-    push_lark.push(card)
+    push_lark.send(card)
 
 
 if __name__ == "__main__":

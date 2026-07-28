@@ -10,6 +10,11 @@
     <string>--weekly</string>
   </array>
   <key>WorkingDirectory</key><string>/Users/bytedance/ai-radar</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>LARK_CHAT_ID</key><string>oc_203a154e0333d4230f42897d019f1745</string>
+    <key>PATH</key><string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+  </dict>
   <key>StartCalendarInterval</key>
   <dict><key>Weekday</key><integer>0</integer><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer></dict>
   <key>StandardOutPath</key><string>/Users/bytedance/ai-radar/data/weekly.log</string>

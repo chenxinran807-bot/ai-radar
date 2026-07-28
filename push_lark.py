@@ -1,4 +1,6 @@
+import json
 import os
+import subprocess
 import time
 
 import requests
@@ -62,3 +64,32 @@ def push(card, webhook=None, retries=3):
             print(f"[push] attempt {attempt + 1} failed: {e}")
         time.sleep(2 ** attempt)
     return False
+
+
+def push_lark_cli(card, chat_id=None, retries=3):
+    """通过 lark-cli 发到群聊（LARK_CHAT_ID）。content 用卡片 1.0 JSON。"""
+    chat_id = chat_id or os.environ["LARK_CHAT_ID"]
+    content = json.dumps(card.get("card", card), ensure_ascii=False)
+    for attempt in range(retries):
+        try:
+            result = subprocess.run(
+                ["lark-cli", "im", "+messages-send", "--as", "bot",
+                 "--chat-id", chat_id,
+                 "--msg-type", "interactive",
+                 "--content", content],
+                capture_output=True, text=True, timeout=30)
+            if result.returncode == 0:
+                return True
+            print(f"[push] lark-cli attempt {attempt + 1}: "
+                  f"{result.stderr[:200]}")
+        except Exception as e:
+            print(f"[push] lark-cli attempt {attempt + 1} failed: {e}")
+        time.sleep(2 ** attempt)
+    return False
+
+
+def send(card):
+    """优先 lark-cli（LARK_CHAT_ID），否则自定义机器人 webhook。"""
+    if os.environ.get("LARK_CHAT_ID"):
+        return push_lark_cli(card)
+    return push(card)

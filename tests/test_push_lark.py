@@ -40,3 +40,24 @@ def test_push_retries_then_fails():
     with patch("push_lark.requests.post", side_effect=Exception("boom")), \
          patch("push_lark.time.sleep"):
         assert not push_lark.push({}, webhook="https://hook.example/x")
+
+
+def test_push_via_lark_cli():
+    proc = MagicMock(returncode=0, stderr="")
+    with patch("push_lark.subprocess.run", return_value=proc) as run:
+        ok = push_lark.push_lark_cli({"msg_type": "interactive",
+                                      "card": {"header": {}}},
+                                     chat_id="oc_test")
+    assert ok
+    args = run.call_args[0][0]
+    assert args[:3] == ["lark-cli", "im", "+messages-send"]
+    assert "oc_test" in args
+
+
+def test_send_dispatch(monkeypatch):
+    monkeypatch.setenv("LARK_CHAT_ID", "oc_x")
+    with patch("push_lark.push_lark_cli", return_value=True) as cli, \
+         patch("push_lark.push", return_value=True) as hook:
+        assert push_lark.send({})
+        cli.assert_called_once()
+        hook.assert_not_called()
