@@ -32,3 +32,32 @@ def parse_interpretation(text):
         if key not in data:
             raise ValueError(f"missing key: {key}")
     return data
+
+
+def run_kimi_cli(prompt, timeout=600):
+    result = subprocess.run(["kimi", "-p", prompt],
+                            capture_output=True, text=True, timeout=timeout)
+    result.check_returncode()
+    return result.stdout
+
+
+def call_moonshot(prompt, timeout=120):
+    api_key = os.environ["MOONSHOT_API_KEY"]
+    resp = requests.post(
+        "https://api.moonshot.cn/v1/chat/completions",
+        headers={"Authorization": f"Bearer {api_key}"},
+        json={"model": DEEP_MODEL,
+              "messages": [{"role": "user", "content": prompt}],
+              "temperature": 0.3},
+        timeout=timeout)
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"]
+
+
+def interpret(article, article_text, deep=False, runner=None):
+    """返回解读 dict；文章与发布无关时返回 None。"""
+    prompt = build_prompt(load_prompt_template(), article, article_text)
+    if runner is None:
+        runner = call_moonshot if deep else run_kimi_cli
+    data = parse_interpretation(runner(prompt))
+    return data if data["relevant"] else None
