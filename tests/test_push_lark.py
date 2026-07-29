@@ -61,3 +61,11 @@ def test_send_dispatch(monkeypatch):
         assert push_lark.send({})
         cli.assert_called_once()
         hook.assert_not_called()
+
+
+def test_value_role_linebreaks():
+    interp = dict(INTERP, value="普通用户：A。开发者：B。关注行业的人：C。")
+    card = push_lark.build_card(ARTICLE, interp)
+    contents = [e.get("content", "") for e in card["card"]["elements"]]
+    value_md = next(c for c in contents if "对你有什么用" in c)
+    assert "普通用户：A。\n开发者：B。\n关注行业的人：C。" in value_md

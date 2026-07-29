@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import subprocess
 import time
 
@@ -8,6 +9,11 @@ import requests
 
 def stars(n):
     return "★" * n + "☆" * (5 - n)
+
+
+def format_value(text):
+    """value 字段按角色换行：普通用户 / 开发者 / 关注行业的人。"""
+    return re.sub(r"(?<!\n)(开发者：|关注行业的人：)", r"\n\1", text)
 
 
 def build_card(article, interp):
@@ -24,7 +30,7 @@ def build_card(article, interp):
                 {"tag": "markdown",
                  "content": f"**{stars(interp['importance'])}**\n\n**一句话**：{interp['one_liner']}"},
                 {"tag": "markdown",
-                 "content": f"**对你有什么用**：{interp['value']}"},
+                 "content": f"**对你有什么用**：\n{format_value(interp['value'])}"},
                 {"tag": "markdown",
                  "content": f"**和别家比**：{interp['comparison']}"},
                 {"tag": "markdown",

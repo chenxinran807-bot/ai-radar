@@ -4,6 +4,8 @@ import os
 import sqlite3
 from collections import defaultdict
 
+from push_lark import format_value
+
 TEMPLATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "template.html")
 
@@ -26,12 +28,13 @@ def load_pushed(db_path="data/radar.db"):
 
 def render_card(item):
     i = item["interp"]
+    value_html = html.escape(format_value(i["value"])).replace("\n", "<br>\n")
     return (
         f'<article class="card">\n'
         f"  <h2>{html.escape(item['source'])}｜{html.escape(item['title'])}</h2>\n"
         f"  <p class=\"stars\">{'★' * item['importance']}</p>\n"
         f"  <p><b>一句话</b>：{html.escape(i['one_liner'])}</p>\n"
-        f"  <p><b>对你有什么用</b>：{html.escape(i['value'])}</p>\n"
+        f"  <p><b>对你有什么用</b>：<br>\n{value_html}</p>\n"
         f"  <p><b>和别家比</b>：{html.escape(i['comparison'])}</p>\n"
         f"  <p><a href=\"{html.escape(item['url'])}\">查看原文</a>"
         f" · {item['date']} · 可信度：{html.escape(i['credibility'])}</p>\n"
