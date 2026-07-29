@@ -112,9 +112,25 @@ def weekly(db_path="data/radar.db"):
 
 
 if __name__ == "__main__":
+    load_env()
     if "--weekly" in sys.argv:
         weekly()
     elif "--baseline" in sys.argv:
         baseline()
     else:
         run()
+
+
+def load_env(path="data/env"):
+    """把 data/env 里的 KEY=VALUE 加载进环境变量（不覆盖已有值）。"""
+    import os
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                os.environ.setdefault(key.strip(), value.strip())
+    except FileNotFoundError:
+        pass

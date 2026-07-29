@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 import interpret
@@ -48,3 +50,28 @@ def test_run_kimi_cli():
         out = interpret.run_kimi_cli("hello")
     assert out == "model output"
     assert run.call_args[0][0][:2] == ["kimi", "-p"]
+
+
+def test_call_api_uses_env(monkeypatch):
+    from unittest.mock import patch, MagicMock
+    monkeypatch.setenv("AI_RADAR_API_KEY", "sk-test")
+    monkeypatch.setenv("AI_RADAR_API_BASE", "https://ark.cn-beijing.volces.com/api/v3")
+    monkeypatch.setenv("AI_RADAR_API_MODEL", "ep-123")
+    resp = MagicMock()
+    resp.json.return_value = {"choices": [{"message": {"content": "out"}}]}
+    with patch("interpret.requests.post", return_value=resp) as post:
+        out = interpret.call_api("hi")
+    assert out == "out"
+    assert post.call_args[0][0] == "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+    assert post.call_args[1]["json"]["model"] == "ep-123"
+    assert post.call_args[1]["headers"]["Authorization"] == "Bearer sk-test"
+
+
+def test_all_api_switch(monkeypatch):
+    monkeypatch.setenv("AI_RADAR_ALL_API", "1")
+    article = {"source": "S", "title": "T", "url": "U"}
+    with patch("interpret.call_api", return_value=GOOD) as api, \
+         patch("interpret.run_kimi_cli") as cli:
+        interpret.interpret(article, "text")
+        api.assert_called_once()
+        cli.assert_not_called()

@@ -41,12 +41,16 @@ def run_kimi_cli(prompt, timeout=600):
     return result.stdout
 
 
-def call_moonshot(prompt, timeout=120):
-    api_key = os.environ["MOONSHOT_API_KEY"]
+def call_api(prompt, timeout=120):
+    """OpenAI 兼容接口（火山方舟 / Moonshot 等），由环境变量配置：
+    AI_RADAR_API_KEY 必填；AI_RADAR_API_BASE / AI_RADAR_API_MODEL 有默认值。"""
+    api_key = os.environ["AI_RADAR_API_KEY"]
+    base = os.environ.get("AI_RADAR_API_BASE", "https://api.moonshot.cn/v1")
+    model = os.environ.get("AI_RADAR_API_MODEL", DEEP_MODEL)
     resp = requests.post(
-        "https://api.moonshot.cn/v1/chat/completions",
+        f"{base}/chat/completions",
         headers={"Authorization": f"Bearer {api_key}"},
-        json={"model": DEEP_MODEL,
+        json={"model": model,
               "messages": [{"role": "user", "content": prompt}],
               "temperature": 0.3},
         timeout=timeout)
@@ -55,9 +59,11 @@ def call_moonshot(prompt, timeout=120):
 
 
 def interpret(article, article_text, deep=False, runner=None):
-    """返回解读 dict；文章与发布无关时返回 None。"""
+    """返回解读 dict；文章与发布无关时返回 None。
+    默认：日常 kimi CLI，deep 用 API；AI_RADAR_ALL_API=1 时全部走 API。"""
     prompt = build_prompt(load_prompt_template(), article, article_text)
     if runner is None:
-        runner = call_moonshot if deep else run_kimi_cli
+        use_api = deep or os.environ.get("AI_RADAR_ALL_API") == "1"
+        runner = call_api if use_api else run_kimi_cli
     data = parse_interpretation(runner(prompt))
     return data if data["relevant"] else None

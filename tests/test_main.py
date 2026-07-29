@@ -56,3 +56,13 @@ def test_baseline_marks_skipped(tmp_path):
             "SELECT status FROM articles WHERE id = 1").fetchone()[0]
         check.close()
     assert status == "skipped"
+
+
+def test_load_env(tmp_path, monkeypatch):
+    env = tmp_path / "env"
+    env.write_text("AI_RADAR_API_KEY=sk-abc\n# comment\n\nOTHER=1\n")
+    monkeypatch.delenv("AI_RADAR_API_KEY", raising=False)
+    main.load_env(str(env))
+    import os
+    assert os.environ["AI_RADAR_API_KEY"] == "sk-abc"
+    assert os.environ["OTHER"] == "1"
